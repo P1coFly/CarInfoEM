@@ -5,13 +5,14 @@ import (
 )
 
 type config struct {
-	Env         string
-	HostDb      string
-	PortDB      string
-	UserDB      string
-	PasswordDB  string
-	NameDb      string
-	HostCarInfo string
+	Env            string
+	HostDB         string
+	PortDB         string
+	UserDB         string
+	PasswordDB     string
+	NameDB         string
+	HostCarInfo    string
+	MigrationsPath string
 	Server
 }
 
@@ -21,6 +22,8 @@ type Server struct {
 
 func MustLoad() *config {
 
-	return &config{Env: os.Getenv("ENV"), HostDb: os.Getenv("HOST_DB"), PortDB: os.Getenv("PORT_DB"),
-		UserDB: os.Getenv("USER_DB"), PasswordDB: os.Getenv("PASSWORD_DB")}
+	return &config{Env: os.Getenv("ENV"), HostDB: os.Getenv("HOST_DB"), PortDB: os.Getenv("PORT_DB"),
+		UserDB: os.Getenv("USER_DB"), PasswordDB: os.Getenv("PASSWORD_DB"), NameDB: os.Getenv("NAME_DB"),
+		HostCarInfo: os.Getenv("HOST_CARINFO"), MigrationsPath: os.Getenv("MIGRATIONS_PATH"),
+		Server: Server{Port: os.Getenv("PORT")}}
 }
