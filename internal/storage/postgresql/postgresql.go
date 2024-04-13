@@ -34,6 +34,7 @@ func New(urlPath, portDB, userDB, password, nameDB, migrationsPath string) (*Sto
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
+	// Запускаем миграцию
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
@@ -92,6 +93,7 @@ func (s *Storage) addPeople(people car.People) (int, error) {
 
 }
 
+// Метод для удаления авто и владельца
 func (s *Storage) DeleteCar(carID int) (int, error) {
 	const op = "storage.postgresql.DeleteCar"
 
@@ -122,6 +124,7 @@ func (s *Storage) DeleteCar(carID int) (int, error) {
 	return carID, nil
 }
 
+// получаем id владельца по id машины
 func (s *Storage) getOwnerIDByCarID(carID int) (int, error) {
 	const op = "storage.postgresql.getOwnerIDByCarID"
 	row := s.db.QueryRow("SELECT owner_id FROM CARS WHERE id = $1", carID)
@@ -137,6 +140,7 @@ func (s *Storage) getOwnerIDByCarID(carID int) (int, error) {
 	return id, nil
 }
 
+// получаем выборку машин с указаной фильтрацией и параметрами пагинации
 func (s *Storage) GetCars(pageSize, pageToken int, carFilter car.CarFilter) ([]car.CarWithOwner, error) {
 	const op = "storage.postgresql.GetCars"
 
@@ -201,6 +205,7 @@ func (s *Storage) GetCars(pageSize, pageToken int, carFilter car.CarFilter) ([]c
 	return cars, nil
 }
 
+// получаем общее кол-во машин
 func (s *Storage) GetTotalCarsCount(carFilter car.CarFilter) (int, error) {
 	const op = "storage.postgresql.GetTotalCarsCount"
 
@@ -252,6 +257,7 @@ func (s *Storage) GetTotalCarsCount(carFilter car.CarFilter) (int, error) {
 	return totalCount, nil
 }
 
+// обновляем данные о машине
 func (s *Storage) PatchCar(carID int, pc car.PatchCar) (int, error) {
 	const op = "storage.postgresql.PatchCar"
 
@@ -262,6 +268,7 @@ func (s *Storage) PatchCar(carID int, pc car.PatchCar) (int, error) {
 
 	carQuery := "UPDATE CARS SET "
 
+	// Формируем параметры на обновлениие
 	var params []interface{}
 	var sql []string
 	if pc.RegNum.Valid {
@@ -305,10 +312,12 @@ func (s *Storage) PatchCar(carID int, pc car.PatchCar) (int, error) {
 	return 0, nil
 }
 
+// обновляем данные о владельце
 func (s *Storage) patchOwner(carID int, patchOwner car.PatchPeople) (int, error) {
 	const op = "storage.postgresql.PatchOwner"
 	ownerQuery := "UPDATE PEOPLES SET "
 
+	// Формируем параметры на обновлениие
 	var params []interface{}
 	var sql []string
 	if patchOwner.Name.Valid {

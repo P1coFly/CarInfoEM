@@ -42,6 +42,7 @@ func New(log *slog.Logger, patcher PatcherCar) http.HandlerFunc {
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
+		//пытаемсяя получить id с запроса
 		carID, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil {
 			log.Error("failed to get car ID from URL")
@@ -50,6 +51,7 @@ func New(log *slog.Logger, patcher PatcherCar) http.HandlerFunc {
 			return
 		}
 
+		//декодируем тело запроса
 		var req Request
 		if err := render.DecodeJSON(r.Body, &req); err != nil {
 			log.Error("failed to decode request body", "error", err)
@@ -60,6 +62,7 @@ func New(log *slog.Logger, patcher PatcherCar) http.HandlerFunc {
 
 		log.Info("request body decoded", slog.Any("request", req))
 
+		//вызываем метож патча сущности
 		code, err := patcher.PatchCar(carID, req.PatchCar)
 		if err != nil {
 			if code == -1 {
@@ -72,6 +75,7 @@ func New(log *slog.Logger, patcher PatcherCar) http.HandlerFunc {
 			render.JSON(w, r, err_response.Error(fmt.Sprintf("failed to patch car: %v", err)))
 			return
 		}
+		//Если нет изменений
 		if code == 2 {
 			w.WriteHeader(204)
 			return

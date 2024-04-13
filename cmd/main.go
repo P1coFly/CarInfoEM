@@ -51,8 +51,8 @@ func main() {
 		os.Exit(1)
 	}
 	log.Info("connect to db is successful", "host", cfg.HostDB)
-	_ = storage
 
+	// инициализируем объект для получения информации из внешнего сервиса
 	carinfo := carinfo.New(cfg.HostCarInfo)
 	// инициализируем router
 	router := chi.NewRouter()

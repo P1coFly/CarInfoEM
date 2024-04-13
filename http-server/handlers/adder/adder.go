@@ -48,6 +48,7 @@ func New(log *slog.Logger, adder AddCar, carInfo CarInfo) http.HandlerFunc {
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
+		//получаем дату из запроса
 		var req Request
 		if err := render.DecodeJSON(r.Body, &req); err != nil {
 			log.Error("failed to decode request body", "error", err)
@@ -58,6 +59,9 @@ func New(log *slog.Logger, adder AddCar, carInfo CarInfo) http.HandlerFunc {
 
 		log.Info("request body decoded", slog.Any("request", req))
 
+		/*отправляем regNum в carInfo
+		получаем объект car и записываем в бд
+		в случаи ошибки запоминаем её и переходим к следующему regNum*/
 		var failedCars []string
 		var errors []error
 		var successfulCarIDs []int
@@ -80,11 +84,13 @@ func New(log *slog.Logger, adder AddCar, carInfo CarInfo) http.HandlerFunc {
 			successfulCarIDs = append(successfulCarIDs, carID)
 		}
 
+		//Если со всеми regNum случилась ошибка
 		if len(failedCars) == len(req.RegNums) {
 			w.WriteHeader(code)
 			render.JSON(w, r, err_response.Error("failed to add cars"))
 			return
 		}
+		//Если частично с regNum случилась ошибка
 		if len(failedCars) > 0 {
 			w.WriteHeader(206)
 			render.JSON(w, r, AddResponse{

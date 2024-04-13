@@ -34,8 +34,8 @@ type GetResponse struct {
 // @Description get cars
 // @Accept json
 // @Produce json
-// @Param page_size query int false "Page size (default is 100)" default:"100"
-// @Param page_token query int false "Page token (default is 1)" default:"1"
+// @Param page_size query int false "Page size (default is 100) used for pagination" default:"100"
+// @Param page_token query int false "Page token (default is 1) used for pagination" default:"1"
 // @Param year query string false "Filter by year (format: 'start:end') example: 2000:2023"
 // @Param reg_num query string false "Filter by registration number"
 // @Param model query string false "Filter by car model"
@@ -57,7 +57,8 @@ func New(log *slog.Logger, get GetCar) http.HandlerFunc {
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
-		// получаемя page_size и page_token для пагинации
+		// получаем page_size и page_token для пагинации
+		// если значения неуказаны, то выставляем по усмолчанию
 		pageSizeStr := r.URL.Query().Get("page_size")
 		if pageSizeStr == "" {
 			pageSizeStr = "100"
@@ -98,7 +99,7 @@ func New(log *slog.Logger, get GetCar) http.HandlerFunc {
 			return
 		}
 
-		// Инициализируем carFilter
+		// Инициализируем carFilter для фильтрации
 		carFilter := car.CarFilter{YearFilter: r.URL.Query().Get("year"),
 			RegNumFilter:     r.URL.Query().Get("reg_num"),
 			ModelFilter:      r.URL.Query().Get("model"),
@@ -107,6 +108,7 @@ func New(log *slog.Logger, get GetCar) http.HandlerFunc {
 			SurnameFilter:    r.URL.Query().Get("surname"),
 			PatronymicFilter: r.URL.Query().Get("patronymic")}
 
+		// Валидируем year, чтобы соответствовал виду 'start:end'
 		var startYear, endYear int
 		if carFilter.YearFilter != "" {
 			years := strings.Split(carFilter.YearFilter, ":")
@@ -142,6 +144,7 @@ func New(log *slog.Logger, get GetCar) http.HandlerFunc {
 			}
 		}
 
+		//получаем выборку car с указанами параметрами
 		carWithOwner, err := get.GetCars(pageSize, pageToken, carFilter)
 		if err != nil {
 			log.Error("failed to get cars", "error", err)
@@ -152,6 +155,7 @@ func New(log *slog.Logger, get GetCar) http.HandlerFunc {
 		}
 		log.Info("cars was got")
 
+		//считаем кол-во страниц
 		total, err := get.GetTotalCarsCount(carFilter)
 		if err != nil {
 			log.Error("failed to get total cars", "error", err)
