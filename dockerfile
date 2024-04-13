@@ -7,7 +7,9 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o app -tags netgo -ldflags '-extldflags "-static"' ./cmd/main.go
+ENV CGO_ENABLED 0
+ENV GOOS linux
+RUN go build -o app -tags netgo -ldflags '-extldflags "-static"' ./cmd/main.go
 
 
 FROM alpine AS runner
