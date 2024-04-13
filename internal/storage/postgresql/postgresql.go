@@ -291,7 +291,7 @@ func (s *Storage) PatchCar(carID int, pc car.PatchCar) (int, error) {
 
 	result, err := s.db.Exec(carQuery, params...)
 	if err != nil {
-		return -1, fmt.Errorf("%s: %w", op, err)
+		return 0, fmt.Errorf("%s: %w", op, err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
@@ -334,7 +334,7 @@ func (s *Storage) patchOwner(carID int, patchOwner car.PatchPeople) (int, error)
 
 	result, err := s.db.Exec(ownerQuery, params...)
 	if err != nil {
-		return -1, nil
+		return 0, fmt.Errorf("%s: %w", op, err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
@@ -342,7 +342,7 @@ func (s *Storage) patchOwner(carID int, patchOwner car.PatchPeople) (int, error)
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
 	if rowsAffected == 0 {
-		return -1, nil
+		return -1, fmt.Errorf("%s: %w", op, errors.New("car not found"))
 	}
 
 	return 0, nil
